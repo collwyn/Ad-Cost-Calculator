@@ -21,7 +21,8 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── ad-calculator/      # DBG Ad Rate Calculator (React + Vite, frontend-only)
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
@@ -34,6 +35,34 @@ artifacts-monorepo/
 ├── tsconfig.json           # Root TS project references
 └── package.json            # Root package with hoisted devDeps
 ```
+
+## Artifacts
+
+### `artifacts/ad-calculator` — DBG Media Ad Rate Calculator
+
+Internal advertising rate calculator for DBG Media Group. **Frontend-only** React + Vite app at `/` (root path). No backend or database required.
+
+**Features:**
+- Analytics header strip with live audience stats (Feb 17–Mar 16, 2026 data)
+- Tier picker (Starter $500/mo, Growth $1,500/mo, Premium $3,500/mo) with auto-population
+- Campaign duration slider (7–90 days) with preset chips
+- Client type selector with discount tiers (SMB 0%, Corp 5%, Nonprofit 20%) — internal only, excluded from PDF
+- Ad format tabs (Display / Video / Premium/Takeover) with card grid
+- Multi-select ad units for Growth/Premium tiers
+- Print bundle toggle (+$400/mo, Our Time Press + Bed-Stuy Villager)
+- Live results panel: impressions, effective CPM, daily rate, subtotal, total, discount badge
+- Impression projections bar chart (Recharts)
+- PDF quote generator (jsPDF programmatic — no html2canvas) — excludes client type, tier names, discounts
+- Copy-to-clipboard for Slack/email
+- Reset button
+
+**Key files:**
+- `src/lib/constants.ts` — ANALYTICS, AD_INVENTORY, TIERS, DISCOUNTS
+- `src/lib/calculator.ts` — pure calculation functions
+- `src/lib/pdf-generator.ts` — jsPDF document construction
+- `src/pages/Calculator.tsx` — main page component
+
+**Dependencies:** `jspdf`, `recharts`, `framer-motion`, `date-fns`, `clsx`, `tailwind-merge`
 
 ## TypeScript & Composite Projects
 

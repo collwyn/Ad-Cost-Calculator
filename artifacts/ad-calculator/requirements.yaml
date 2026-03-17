@@ -1,0 +1,13 @@
+packages:
+  "recharts": "For the impression projection bar chart"
+  "jspdf": "For programmatic PDF quote generation without html2canvas"
+  "date-fns": "For formatting dates in the PDF and UI"
+  "framer-motion": "For smooth layout transitions and premium interactions"
+  "clsx": "For conditional class merging"
+  "tailwind-merge": "For conditional class merging"
+
+images: []
+
+notes:
+  - "No backend API required. All state and logic is client-side."
+  - "PDF generation strictly uses jsPDF primitives (text, rect, line), not canvas rendering."
