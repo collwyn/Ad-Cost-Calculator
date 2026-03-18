@@ -2,5 +2,8 @@
   "buildCommand": "pnpm --filter @workspace/ad-calculator run build",
   "outputDirectory": "artifacts/ad-calculator/dist/public",
   "framework": null,
-  "installCommand": "pnpm install"
+  "installCommand": "pnpm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
