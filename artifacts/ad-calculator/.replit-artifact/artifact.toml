@@ -23,7 +23,7 @@ BASE_PATH = "/"
 
 [services.production]
 build = ["pnpm", "--filter", "@workspace/ad-calculator", "run", "build"]
-publicDir = "artifacts/ad-calculator/dist/public"
+publicDir = "artifacts/ad-calculator/dist"
 serve = "static"
 
 [[services.production.rewrites]]
