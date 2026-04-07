@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Eye, Clock, Download, Copy, RotateCcw, CheckCircle2, ChevronRight, BarChart3, Newspaper, Percent } from 'lucide-react';
+import { Download, Copy, RotateCcw, CheckCircle2, ChevronRight, BarChart3, Newspaper, Percent } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
 import {
@@ -138,30 +138,6 @@ export default function CalculatorPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Analytics Header */}
-      <header className="bg-primary text-primary-foreground py-3 px-4 shadow-md z-10 relative">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm font-medium gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-display font-bold text-lg mr-4 tracking-wider">DBG MEDIA</span>
-            <span className="hidden md:inline px-2 py-0.5 bg-primary-foreground/10 rounded-md text-xs">Internal Calculator</span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-primary-foreground/80">
-            <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-accent" />
-              <span>{fN(ANALYTICS.MONTHLY_ACTIVE_USERS)} MAU</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-accent" />
-              <span>~{fN(ANALYTICS.DAILY_PAGE_VIEWS)} DPV</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-accent" />
-              <span>{ANALYTICS.AVG_ENGAGEMENT_SEC}s Avg</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
