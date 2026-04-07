@@ -98,10 +98,11 @@ export default function CalculatorPage() {
   // Duration changes don't affect tier selection
   const handleDaysChange = (v: number) => setDays(v);
 
-  // Client type change: update preset discount reference, clear custom input, don't deselect tier
+  // Client type change: update preset, clear custom input, auto-enable discount for non-zero presets
   const handleClientTypeChange = (v: ClientType) => {
     setClientType(v);
     setCustomDiscountInput('');
+    setDiscountEnabled(DISCOUNTS[v] > 0);
   };
 
   const handleCopy = () => {
