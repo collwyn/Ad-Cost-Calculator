@@ -1,15 +1,16 @@
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
-import { AD_INVENTORY, ANALYTICS, PRINT_ADDON_MONTHLY } from "./constants";
+import { AD_INVENTORY, ANALYTICS, NEWSLETTER_PRICE_PER_SEND, NEWSLETTER_UNIT_ID, PRINT_ADDON_MONTHLY } from "./constants";
 import { calculateQuote } from "./calculator";
 
 export function generatePDFQuote(
   adIds: string[],
   days: number,
-  printBundle: boolean
+  printBundle: boolean,
+  newsletterSends: number = 0
 ) {
   // Always use 0 discount for PDF — no client/discount info in output
-  const calc = calculateQuote(adIds, days, 0, printBundle);
+  const calc = calculateQuote(adIds, days, 0, printBundle, newsletterSends);
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -105,8 +106,15 @@ export function generatePDFQuote(
     doc.setFont("helvetica", "bold");
     doc.text(ad.name, margin, y);
     doc.setFont("helvetica", "normal");
-    const lineTotal = ad.baseDay * days;
-    doc.text(`${formatCurrency(ad.baseDay)}/day × ${days} days`, margin + 80, y);
+    const isNewsletter = ad.id === NEWSLETTER_UNIT_ID;
+    const lineTotal = isNewsletter ? NEWSLETTER_PRICE_PER_SEND * newsletterSends : ad.baseDay * days;
+    doc.text(
+      isNewsletter
+        ? `${formatCurrency(NEWSLETTER_PRICE_PER_SEND)}/send × ${newsletterSends} sends`
+        : `${formatCurrency(ad.baseDay)}/day × ${days} days`,
+      margin + 80,
+      y
+    );
     doc.text(formatCurrency(lineTotal), pageWidth - margin, y, { align: "right" });
     y += 8;
   });
@@ -136,8 +144,10 @@ export function generatePDFQuote(
   doc.setTextColor(secondaryColor);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Estimated Impressions: ${formatNumber(calc.impressions)}`, margin, y); y += 6;
-  doc.text(`Effective CPM: ${formatCurrency(calc.effectiveCPM)}`, margin, y);
+  if (calc.impressions > 0) {
+    doc.text(`Estimated Website Impressions: ${formatNumber(calc.impressions)}`, margin, y); y += 6;
+    doc.text(`Effective CPM (website): ${formatCurrency(calc.effectiveCPM)}`, margin, y);
+  }
 
   // Footer
   const footerY = doc.internal.pageSize.getHeight() - 20;
