@@ -10,6 +10,8 @@ import {
   TIERS,
   ClientType,
   PRINT_ADDON_MONTHLY,
+  NEWSLETTER_PRICE_PER_SEND,
+  NEWSLETTER_UNIT_ID,
   Tier,
 } from '@/lib/constants';
 import { calculateQuote } from '@/lib/calculator';
@@ -33,7 +35,9 @@ export default function CalculatorPage() {
   const [discountEnabled, setDiscountEnabled] = useState(false);
   const [customDiscountInput, setCustomDiscountInput] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'display' | 'video' | 'premium'>('display');
+  const [newsletterSends, setNewsletterSends] = useState(4);
+
+  const [activeTab, setActiveTab] = useState<'display' | 'video' | 'premium' | 'newsletter'>('display');
   const [copied, setCopied] = useState(false);
 
   // Compute effective discount rate (0–1)
@@ -48,8 +52,8 @@ export default function CalculatorPage() {
 
   // Main calculation
   const results = useMemo(
-    () => calculateQuote(selectedAdIds, days, effectiveDiscount, printBundle),
-    [selectedAdIds, days, effectiveDiscount, printBundle]
+    () => calculateQuote(selectedAdIds, days, effectiveDiscount, printBundle, newsletterSends),
+    [selectedAdIds, days, effectiveDiscount, printBundle, newsletterSends]
   );
 
   // Live cost for a tier card given current days + discount
@@ -116,6 +120,7 @@ export default function CalculatorPage() {
       `Daily Rate: ${fCExact(results.totalDailyRate)}/day`,
       `Campaign Subtotal: ${fCExact(results.subtotal)}`,
       printBundle ? `Print Add-on: ${fCExact(results.printAddOn)}` : null,
+      results.newsletterCost > 0 ? `Newsletter (${newsletterSends} sends): ${fCExact(results.newsletterCost)}` : null,
       `Total: ${fCExact(results.total)}`,
       `Effective CPM: ${fCExact(results.effectiveCPM)}`,
       discountLine || null,
@@ -327,7 +332,7 @@ export default function CalculatorPage() {
               )}
 
               <div className="mb-6 flex gap-2 border-b border-border pb-px overflow-x-auto">
-                {(['display', 'video', 'premium'] as const).map(tab => (
+                {(['display', 'video', 'premium', 'newsletter'] as const).map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -351,7 +356,7 @@ export default function CalculatorPage() {
                 <AnimatePresence mode="popLayout">
                   {AD_INVENTORY.filter(ad => ad.category === activeTab).map(ad => {
                     const isSelected = selectedAdIds.includes(ad.id);
-                    const effectiveRate = ad.baseDay * (1 - effectiveDiscount);
+                    const effectiveRate = (ad.pricePerSend ?? ad.baseDay) * (1 - effectiveDiscount);
                     return (
                       <motion.button
                         key={ad.id}
@@ -385,13 +390,15 @@ export default function CalculatorPage() {
                             <div className="font-bold text-foreground">
                               {effectiveDiscount > 0 ? (
                                 <>
-                                  <span className="line-through text-muted-foreground text-xs font-normal mr-1">{fCExact(ad.baseDay)}</span>
+                                  <span className="line-through text-muted-foreground text-xs font-normal mr-1">{fCExact(ad.pricePerSend ?? ad.baseDay)}</span>
                                   {fCExact(effectiveRate)}
                                 </>
-                              ) : fCExact(ad.baseDay)}
-                              <span className="text-xs text-muted-foreground font-normal">/day</span>
+                              ) : fCExact(ad.pricePerSend ?? ad.baseDay)}
+                              <span className="text-xs text-muted-foreground font-normal">{ad.pricePerSend ? '/send' : '/day'}</span>
                             </div>
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{fCExact(ad.cpm)} CPM Base</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                              {ad.pricePerSend ? 'Placeholder rate' : `${fCExact(ad.cpm)} CPM Base`}
+                            </div>
                           </div>
                         </div>
                       </motion.button>
@@ -399,6 +406,26 @@ export default function CalculatorPage() {
                   })}
                 </AnimatePresence>
               </div>
+
+              {activeTab === 'newsletter' && selectedAdIds.includes(NEWSLETTER_UNIT_ID) && (
+                <div className="mt-4 flex items-center justify-between gap-4 p-4 bg-card rounded-2xl border border-border">
+                  <label htmlFor="newsletter-sends" className="text-sm font-medium">
+                    Newsletter sends
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {fCExact(NEWSLETTER_PRICE_PER_SEND)} per send. Placeholder rate until confirmed.
+                    </span>
+                  </label>
+                  <input
+                    id="newsletter-sends"
+                    type="number"
+                    min={1}
+                    max={52}
+                    value={newsletterSends}
+                    onChange={(e) => setNewsletterSends(Math.max(1, Math.min(52, Number(e.target.value) || 1)))}
+                    className="w-20 h-9 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+              )}
             </section>
 
             {/* PRINT BUNDLE */}
@@ -488,13 +515,19 @@ export default function CalculatorPage() {
                         <span className="font-medium">{fCExact(results.printAddOn)}</span>
                       </div>
                     )}
+                    {results.newsletterCost > 0 && (
+                      <div className="flex justify-between items-center text-accent">
+                        <span className="font-medium">Newsletter × {newsletterSends} sends</span>
+                        <span className="font-medium">{fCExact(results.newsletterCost)}</span>
+                      </div>
+                    )}
                     {effectiveDiscount > 0 && (
                       <div className="flex justify-between items-center">
                         <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent">
                           <Percent className="w-3 h-3" />
                           {(effectiveDiscount * 100).toFixed(1)}% discount
                         </span>
-                        <span className="text-xs text-accent">–{fCExact(results.subtotal / (1 - effectiveDiscount) * effectiveDiscount)}</span>
+                        <span className="text-xs text-accent">–{fCExact((results.subtotal + results.newsletterCost) / (1 - effectiveDiscount) * effectiveDiscount)}</span>
                       </div>
                     )}
                   </div>
@@ -508,7 +541,7 @@ export default function CalculatorPage() {
 
                   <div className="space-y-3">
                     <button
-                      onClick={() => generatePDFQuote(selectedAdIds, days, printBundle)}
+                      onClick={() => generatePDFQuote(selectedAdIds, days, printBundle, newsletterSends)}
                       disabled={selectedAdIds.length === 0}
                       className={cn(
                         "w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg",

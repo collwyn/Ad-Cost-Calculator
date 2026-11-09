@@ -8,13 +8,18 @@ export const ANALYTICS = {
 
 export type AdUnit = {
   id: string;
-  category: 'display' | 'video' | 'premium';
+  category: 'display' | 'video' | 'premium' | 'newsletter';
   name: string;
   dimensions: string;
   baseDay: number;
   cpm: number;
   desc: string;
+  pricePerSend?: number;
 };
+
+// PLACEHOLDER until Our Time Press confirms the real rate. Also set in otp-ad-delivery.
+export const NEWSLETTER_PRICE_PER_SEND = 95;
+export const NEWSLETTER_UNIT_ID = 'newsletter-banner';
 
 export const AD_INVENTORY: AdUnit[] = [
   // Display
@@ -30,6 +35,8 @@ export const AD_INVENTORY: AdUnit[] = [
   // Premium
   { id: 'full-takeover', category: 'premium', name: 'Full Site Takeover', dimensions: 'Multiple', baseDay: 54.00, cpm: 40, desc: 'Own every ad slot on the site.' },
   { id: 'home-takeover', category: 'premium', name: 'Homepage Takeover', dimensions: 'Multiple', baseDay: 40.50, cpm: 30, desc: 'Dominate the homepage experience.' },
+  // Newsletter: priced per send, so baseDay and cpm stay 0
+  { id: 'newsletter-banner', category: 'newsletter', name: 'Newsletter Banner', dimensions: '600×150', baseDay: 0, cpm: 0, pricePerSend: NEWSLETTER_PRICE_PER_SEND, desc: 'Full-width banner in one Mailchimp newsletter send.' },
 ];
 
 export const DISCOUNTS = {
